@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35431.28
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileManagementAPI", "FileManagementAPI\FileManagementAPI.csproj", "{006C15B7-47F5-49E9-8A0F-A8B117E48BC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileManagementUI", "FileManagementUI\FileManagementUI.csproj", "{08FF76D1-615E-46C9-84DE-0FC07A53F8F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{006C15B7-47F5-49E9-8A0F-A8B117E48BC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{006C15B7-47F5-49E9-8A0F-A8B117E48BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{006C15B7-47F5-49E9-8A0F-A8B117E48BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{006C15B7-47F5-49E9-8A0F-A8B117E48BC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08FF76D1-615E-46C9-84DE-0FC07A53F8F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08FF76D1-615E-46C9-84DE-0FC07A53F8F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08FF76D1-615E-46C9-84DE-0FC07A53F8F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08FF76D1-615E-46C9-84DE-0FC07A53F8F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F90E1E9-8FCF-4DDD-8959-634D146CF9B1}
+	EndGlobalSection
+EndGlobal
