@@ -1,0 +1,227 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Dosya Yönetim Sistemi">
+    <meta name="author" content="FileManagement">
+
+    <title>Dosya Yönetim Sistemi - Kayıt</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="~/sbadmin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="~/sbadmin/css/sb-admin-2.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-10 col-md-12">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+                            <div class="col-lg-7">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Hesap Oluştur!</h1>
+                                    </div>
+                                    
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            <input type="text" class="form-control form-control-user" id="txtFirstName"
+                                                placeholder="Ad">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form-control-user" id="txtLastName"
+                                                placeholder="Soyad">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="email" class="form-control form-control-user" id="txtEmail"
+                                            placeholder="E-posta Adresi">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control form-control-user" id="txtUsername"
+                                            placeholder="Kullanıcı Adı">
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            <input type="password" class="form-control form-control-user"
+                                                id="txtPassword" placeholder="Şifre">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="password" class="form-control form-control-user"
+                                                id="txtConfirmPassword" placeholder="Şifre Tekrar">
+                                        </div>
+                                    </div>
+                                    <button id="btnRegister" class="btn btn-primary btn-user btn-block">
+                                        Kayıt Ol
+                                    </button>
+                                    
+                                    <hr>
+                                    <div id="divResult" style="display: none;"></div>
+                                    
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="/Home/ForgotPassword">Şifremi Unuttum?</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="/Home/Login">Zaten hesabınız var mı? Giriş yapın!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/sbadmin/vendor/jquery/jquery.min.js"></script>
+    <script src="~/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/sbadmin/js/sb-admin-2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // API URL
+            var apiBaseUrl = "http://localhost:5229/api"; 
+            
+            // Kayıt butonu tıklama olayı
+            $("#btnRegister").click(function() {
+                register();
+            });
+            
+            // Enter tuşu ile kayıt
+            $(document).keypress(function(e) {
+                if (e.which == 13) {
+                    register();
+                }
+            });
+            
+            // Kayıt işlevi
+            function register() {
+                // Form validasyonu
+                var firstName = $("#txtFirstName").val();
+                var lastName = $("#txtLastName").val();
+                var email = $("#txtEmail").val();
+                var username = $("#txtUsername").val();
+                var password = $("#txtPassword").val();
+                var confirmPassword = $("#txtConfirmPassword").val();
+                
+                // Alanları kontrol et
+                if (!firstName || !lastName || !email || !username || !password || !confirmPassword) {
+                    showMessage("error", "Lütfen tüm alanları doldurun!");
+                    return;
+                }
+                
+                // E-posta kontrolü
+                if (!isValidEmail(email)) {
+                    showMessage("error", "Lütfen geçerli bir e-posta adresi girin!");
+                    return;
+                }
+                
+                // Şifre eşleşme kontrolü
+                if (password !== confirmPassword) {
+                    showMessage("error", "Şifreler eşleşmiyor!");
+                    return;
+                }
+                
+                // Şifre uzunluk kontrolü
+                if (password.length < 6) {
+                    showMessage("error", "Şifre en az 6 karakter olmalıdır!");
+                    return;
+                }
+                
+                // Kayıt verilerini hazırla
+                var registerData = {
+                    FirstName: firstName,
+                    LastName: lastName,
+                    Email: email,
+                    Username: username,
+                    Password: password
+                };
+                
+                // Kayıt butonu devre dışı
+                $("#btnRegister").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Kaydediliyor...');
+                
+                // AJAX isteği
+                $.ajax({
+                    url: apiBaseUrl + "/auth/register",
+                    type: "POST",
+                    data: JSON.stringify(registerData),
+                    contentType: "application/json",
+                    success: function(response) {
+                        showMessage("success", "Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
+                        
+                        // Giriş sayfasına yönlendir
+                        setTimeout(function() {
+                            window.location.href = "/Home/Login";
+                        }, 2000);
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMessage = "Kayıt sırasında bir hata oluştu";
+                        
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.error) {
+                                errorMessage = xhr.responseJSON.error;
+                            } else if (xhr.responseText) {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response && response.error) {
+                                    errorMessage = response.error;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("JSON parse error", e);
+                        }
+                        
+                        showMessage("error", errorMessage);
+                        $("#btnRegister").prop("disabled", false).html('Kayıt Ol');
+                    }
+                });
+            }
+            
+            // E-posta doğrulama
+function isValidEmail(email) {
+    var pattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+    return pattern.test(email);
+}
+            
+            // Mesaj gösterme fonksiyonu
+            function showMessage(type, message) {
+                $("#divResult")
+                    .fadeIn()
+                    .removeClass()
+                    .addClass("alert alert-" + (type === "success" ? "success" : "danger"))
+                    .html(message);
+                
+                if (type !== "success") {
+                    setTimeout(function() {
+                        $("#divResult").fadeOut();
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,19 +1,18 @@
-﻿﻿@{
+﻿@{
     Layout = null;
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Dosya Yönetim Sistemi">
+    <meta name="author" content="FileManagement">
 
-    <title>SB Admin 2 - Login</title>
+    <title>Dosya Yönetim Sistemi - Giriş</title>
 
     <!-- Custom fonts for this template-->
     <link href="~/sbadmin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -26,17 +25,12 @@
 </head>
 
 <body class="bg-gradient-primary">
-
     <div class="container">
-
         <div class="row justify-content-center">
-
             <div class="col-xl-6 col-lg-6 col-md-9">
-
                 <div class="card o-hidden border-0 shadow-lg my-5">
                     <div class="card-body p-0">
                         <div class="row">
-
                             <div class="col-lg-12">
                                 <div class="p-5">
                                     <div class="text-center">
@@ -44,8 +38,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <input type="email" class="form-control form-control-user"
-                                               id="txtUserName" aria-describedby="emailHelp"
+                                        <input type="text" class="form-control form-control-user"
+                                               id="txtUsername" aria-describedby="emailHelp"
                                                placeholder="Kullanıcı Adı">
                                     </div>
                                     <div class="form-group">
@@ -54,32 +48,30 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="custom-control custom-checkbox small">
+                                            <input type="checkbox" class="custom-control-input" id="rememberMe">
+                                            <label class="custom-control-label" for="rememberMe">Beni Hatırla</label>
                                         </div>
                                     </div>
                                     <button class="btn btn-primary btn-user btn-block" id="btnLogin">
                                         Giriş
                                     </button>
 
-
                                     <hr>
-                                    <div id="divResult"></div>
+                                    <div id="divResult" style="display: none;"></div>
 
                                     <div class="text-center">
-                                        @*    <a class="small" href="forgot-password.html">Forgot Password?</a>
-                                        </div>
-                                        <div class="text-center">
-                                        <a class="small" href="register.html">Create an Account!</a> *@
+                                        <a class="small" href="/Home/ForgotPassword">Şifremi Unuttum</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="/Home/Register">Yeni Hesap Oluştur</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
     <!-- Bootstrap core JavaScript-->
@@ -93,62 +85,114 @@
     <script src="~/sbadmin/js/sb-admin-2.min.js"></script>
 
     <script>
-        $(document).ready(function(){
-        var apiBaseUrl="@ViewBag.ApiBaseURL";
+        $(document).ready(function () {
+            // API URL sabit olarak tanımlayalım
+            var apiBaseUrl = "http://localhost:5229/api"; // Doğru API adresi
 
-            $("#btnLogin").click(function(){
-        if($("#txtUserName").val()=="" || $("#txtUserName").val()==null || $("#txtPassword").val()=="" || $("#txtPassword").val()==null){
-        $("#divResult")
-                    .fadeIn()
-                    .removeClass()
-                    .addClass("alert alert-danger")
-                    .html("Kullanıcı Adı ve Parola Giriniz!")
-                    .fadeOut(3000);
+            // Login sayfasındayız, localStorage'daki token bilgilerini temizleyelim
+            clearUserSession();
 
-
-        return false;
-        }
-
-            var userName=$("#txtUserName").val();
-            var password=$("#txtPassword").val();
-
-            var login=new Object();
-            login.UserName=userName;
-            login.Password=password;
-
-              $.ajax({
-               url: apiBaseUrl + "/User/SignIn",
-               type: "POST",
-               data: JSON.stringify(login),
-               contentType: "application/json",
-               success: function (d) {
-        if (d.status){
-           localStorage.setItem("token",d.message);
-           location.href="/Categories";
-        }else{
-                   $("#divResult")
-                    .fadeIn()
-                    .removeClass()
-                    .addClass("alert alert-danger mt-3")
-                    .html(d.message)
-                    .fadeOut(3000);
-        }
-
-               },
-               error:  function (d) {},
-
-                        });
-
-
-
+            // Login butonuna tıklanınca
+            $("#btnLogin").click(function () {
+                login();
             });
 
+            // Enter tuşuna basınca login işlemi yap
+            $(document).keypress(function (e) {
+                if (e.which == 13) {
+                    login();
+                }
+            });
 
+            // Login işlevi
+            function login() {
+                // Form validasyonu
+                if ($("#txtUsername").val() == "" || $("#txtPassword").val() == "") {
+                    showMessage("error", "Kullanıcı adı ve şifre giriniz!");
+                    return;
+                }
 
+                // Login datası
+                var loginData = {
+                    Username: $("#txtUsername").val(),
+                    Password: $("#txtPassword").val()
+                };
 
+                // Login butonu devre dışı
+                $("#btnLogin").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Giriş Yapılıyor...');
+
+                // AJAX isteği
+                $.ajax({
+                    url: apiBaseUrl + "/auth/login",
+                    type: "POST",
+                    data: JSON.stringify(loginData),
+                    contentType: "application/json",
+                    success: function (response) {
+                        if (response && response.token) {
+                            // Token'ı sakla
+                            localStorage.setItem("token", response.token);
+                            localStorage.setItem("username", response.username);
+                            localStorage.setItem("roles", JSON.stringify(response.roles || []));
+                            localStorage.setItem("tokenExpiration", response.expiration);
+
+                            // Başarılı mesajı göster
+                            showMessage("success", "Giriş başarılı! Yönlendiriliyorsunuz...");
+
+                            // Dashboard'a yönlendir
+                            setTimeout(function () {
+                                window.location.href = "/Dashboard";
+                            }, 1000);
+                        } else {
+                            showMessage("error", "Giriş başarısız! Lütfen tekrar deneyin.");
+                            $("#btnLogin").prop("disabled", false).html("Giriş");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        var errorMessage = "Giriş başarısız";
+
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.error) {
+                                errorMessage = xhr.responseJSON.error;
+                            } else if (xhr.responseText) {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response && response.error) {
+                                    errorMessage = response.error;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("JSON parse error", e);
+                        }
+
+                        showMessage("error", errorMessage);
+                        $("#btnLogin").prop("disabled", false).html("Giriş");
+                    }
+                });
+            }
+
+            // Kullanıcı oturum bilgilerini temizle
+            function clearUserSession() {
+                localStorage.removeItem("token");
+                localStorage.removeItem("username");
+                localStorage.removeItem("roles");
+                localStorage.removeItem("tokenExpiration");
+            }
+
+            // Mesaj gösterme fonksiyonu
+            function showMessage(type, message) {
+                $("#divResult")
+                    .fadeIn()
+                    .removeClass()
+                    .addClass("alert alert-" + (type === "success" ? "success" : "danger"))
+                    .html(message);
+
+                if (type !== "success") {
+                    setTimeout(function () {
+                        $("#divResult").fadeOut();
+                    }, 3000);
+                }
+            }
         });
     </script>
-
 </body>
 
 </html>

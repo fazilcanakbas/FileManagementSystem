@@ -1,16 +1,14 @@
-﻿﻿
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="tr">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
+    <meta name="description" content="Dosya Yönetim Sistemi">
     <meta name="author" content="">
 
-    <title>SB Admin 2 - Blank</title>
+    <title>@ViewData["Title"] - Dosya Yönetim Sistemi</title>
 
     <!-- Custom fonts for this template-->
     <link href="~/sbadmin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -20,6 +18,15 @@
     <!-- Custom styles for this template-->
     <link href="~/sbadmin/css/sb-admin-2.min.css" rel="stylesheet">
 
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/sbadmin/vendor/jquery/jquery.min.js"></script>
+    <script src="~/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/sbadmin/js/sb-admin-2.min.js"></script>
 </head>
 
 <body id="page-top">
@@ -31,11 +38,11 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/Dashboard">
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+                    <i class="fas fa-file-alt"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">Dosya Yönetim</div>
             </a>
 
             <!-- Divider -->
@@ -43,21 +50,49 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" asp-action="Index">
+                <a class="nav-link" href="/Dashboard">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Ana Sayfa</span>
+                    <span>Dashboard</span>
                 </a>
             </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Dosya İşlemleri
+            </div>
+
+            <!-- Nav Item - Dosyalar -->
             <li class="nav-item">
-                <a class="nav-link" asp-action="Categories">
-                    <i class="fas fa-fw fa-list"></i>
-                    <span>Kategoriler</span>
+                <a class="nav-link" href="/Files">
+                    <i class="fas fa-fw fa-file"></i>
+                    <span>Dosyalar</span>
                 </a>
             </li>
+
+            <!-- Nav Item - Klasörler -->
             <li class="nav-item">
-                <a class="nav-link" asp-action="Products">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Ürünler</span>
+                <a class="nav-link" href="/Folders">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Klasörler</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Kullanıcı İşlemleri
+            </div>
+
+            <!-- Nav Item - Kullanıcılar -->
+            <li class="nav-item" id="adminMenu" style="display: none;">
+                <a class="nav-link" href="/Users">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Kullanıcılar</span>
                 </a>
             </li>
 
@@ -85,79 +120,34 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    @*    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                    <div class="input-group">
-                    <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                    aria-label="Search" aria-describedby="basic-addon2">
-                    <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">
-                    <i class="fas fa-search fa-sm"></i>
-                    </button>
-                    </div>
-                    </div>
-                    </form> *@
-
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                 aria-labelledby="searchDropdown">
-                                @*   <form class="form-inline mr-auto w-100 navbar-search">
-                                <div class="input-group">
-                                <input type="text" class="form-control bg-light border-0 small"
-                                placeholder="Search for..." aria-label="Search"
-                                aria-describedby="basic-addon2">
-                                <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                <i class="fas fa-search fa-sm"></i>
-                                </button>
-                                </div>
-                                </div>
-                                </form> *@
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <!-- Nav Item - Messages -->
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow NotLogined">
-                            <a class="nav-link" href="/Login">Oturum Aç</a>
-                        </li>
-                        <li class="nav-item dropdown no-arrow Logined">
-                            <a class="nav-link">
-                                <span class="badge bg-info text-white" id="divRole"></span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item dropdown no-arrow Logined">
+                        <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="UserName"></span>
-                                <img class="img-profile rounded-circle"
-                                     id="ImgUserPhoto">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="username">Kullanıcı</span>
+                                <img class="img-profile rounded-circle" src="~/sbadmin/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                  aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="/Profile">
+                                <a class="dropdown-item" href="/Home/Profile">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil Güncelle
-
+                                    Profil
                                 </a>
+
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Ayarlar
+                                </a>
+                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Oturumu Kapat
+                                    Çıkış Yap
                                 </a>
                             </div>
                         </li>
@@ -167,11 +157,7 @@
                 </nav>
                 <!-- End of Topbar -->
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
-
-                    @RenderBody()
-
-                </div>
+                @RenderBody()
                 <!-- /.container-fluid -->
 
             </div>
@@ -180,7 +166,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Dosya Yönetim Sistemi @DateTime.Now.Year</span>
                     </div>
                 </div>
             </footer>
@@ -201,32 +187,52 @@
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="exampleModalLabel">Oturumu Kapat</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Çıkış yapmak istiyor musunuz?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Oturum Kapatılacaktır Onaylıyor musunuz?</div>
+                <div class="modal-body">Oturumu sonlandırmak için "Çıkış Yap" butonuna tıklayın.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">İptal</button>
-                    <a class="btn btn-danger" id="Logout">Oturumu Kapat</a>
+                    <a class="btn btn-primary" id="btnLogout" href="javascript:;">Çıkış Yap</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="~/sbadmin/vendor/jquery/jquery.min.js"></script>
-    <script src="~/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Token kontrolü
+                   var token = localStorage.getItem("token");
+        if (!token || token.trim() === "") {
+            window.location.href = "/Home/Login";
+            return;
+        }
 
-    <!-- Core plugin JavaScript-->
-    <script src="~/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
 
-    <!-- Custom scripts for all pages-->
-    <script src="~/sbadmin/js/sb-admin-2.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+            // Kullanıcı adını göster
+            $("#username").text(localStorage.getItem("username") || "Kullanıcı");
+
+            // Kullanıcı rollerine göre menü öğelerini göster/gizle
+            var roles = JSON.parse(localStorage.getItem("roles") || "[]");
+            if (roles.includes("Admin")) {
+                $("#adminMenu").show();
+            }
+
+            // Çıkış yapma işlemi
+            $("#btnLogout").click(function () {
+                localStorage.removeItem("token");
+                localStorage.removeItem("username");
+                localStorage.removeItem("roles");
+                localStorage.removeItem("tokenExpiration");
+                window.location.href = "/Home/Login";
+            });
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 
 </html>

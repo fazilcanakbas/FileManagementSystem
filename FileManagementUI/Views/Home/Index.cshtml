@@ -1,6 +1,430 @@
-﻿﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@{
+    ViewData["Title"] = "Kontrol Paneli";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<!-- Page Heading -->
-<h1 class="h3 mb-4 text-gray-800">Ana Sayfa</h1>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Kontrol Paneli</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Rapor Oluştur
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Dosya Sayısı Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Dosya
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalFilesCount">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Klasör Sayısı Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Toplam Klasör
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalFoldersCount">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-folder fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Depolama Kullanımı Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Depolama Kullanımı
+                            </div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="storageUsagePercent">0%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" role="progressbar"
+                                             style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                                             aria-valuemax="100" id="storageUsageBar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="small mt-1" id="storageUsageDetails">0 MB / 0 MB</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kullanıcı Sayısı Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Toplam Kullanıcı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsersCount">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Son Yüklenen Dosyalar Kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Son Yüklenen Dosyalar</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="recentFilesTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Adı</th>
+                                    <th>Boyut</th>
+                                    <th>Tarih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentFilesTableBody">
+                                <!-- Son dosyalar AJAX ile doldurulacak -->
+                                <tr>
+                                    <td colspan="3" class="text-center">Yükleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son İşlemler Kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Son İşlemler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="recentActivities">
+                        <!-- Son aktiviteler AJAX ile doldurulacak -->
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Yükleniyor...</h6>
+                                <small>-</small>
+                            </div>
+                            <p class="mb-1">Aktiviteler yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Dosya Dağılımı Kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Dosya Türleri Dağılımı</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie" id="fileTypeDistribution" style="height: 300px;">
+                        <!-- Burada grafik olacak -->
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                            <div class="text-center">
+                                <i class="fas fa-chart-pie fa-3x text-gray-300"></i>
+                                <p class="mt-2 text-gray-600">Dosya türleri dağılımı gösterimi için Chart.js gerekli.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistem Durumu Kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Sistem Durumu</h6>
+                </div>
+                <div class="card-body">
+                    <h4 class="small font-weight-bold">CPU Kullanımı <span class="float-right">20%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">RAM Kullanımı <span class="float-right">40%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Disk I/O <span class="float-right">60%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Veritabanı Bağlantıları <span class="float-right">80%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Hizmet Durumu <span class="float-right">Çalışıyor</span></h4>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // API URL
+            var apiBaseUrl = "http://localhost:5229/api";
+
+            // Token kontrolü
+            var token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/Home/Login";
+                return;
+            }
+
+            // Kontrol paneli verilerini yükle
+            loadDashboardData();
+            loadRecentFiles();
+            loadRecentActivities();
+
+            // Kontrol paneli verilerini yükle
+            function loadDashboardData() {
+                $.ajax({
+                    url: apiBaseUrl + "/dashboard",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("Kontrol paneli verileri:", response);
+
+                        // Yanıt formatını kontrol et
+                        var dashboardData = response;
+                        if (response && response.data) {
+                            dashboardData = response.data;
+                        }
+
+                        // Toplam dosya sayısı
+                        if (dashboardData.totalFiles !== undefined) {
+                            $("#totalFilesCount").text(dashboardData.totalFiles);
+                        }
+
+                        // Toplam klasör sayısı
+                        if (dashboardData.totalFolders !== undefined) {
+                            $("#totalFoldersCount").text(dashboardData.totalFolders);
+                        }
+
+                        // Toplam kullanıcı sayısı
+                        if (dashboardData.totalUsers !== undefined) {
+                            $("#totalUsersCount").text(dashboardData.totalUsers);
+                        }
+
+                        // Depolama kullanımı
+                        if (dashboardData.storageUsage) {
+                            var percent = dashboardData.storageUsage.usagePercent || 0;
+                            var used = dashboardData.storageUsage.usedSpace || 0;
+                            var total = dashboardData.storageUsage.totalSpace || 0;
+
+                            $("#storageUsagePercent").text(percent + "%");
+                            $("#storageUsageBar").css("width", percent + "%").attr("aria-valuenow", percent);
+
+                            // Formatlanmış değerler
+                            var usedFormatted = formatFileSize(used);
+                            var totalFormatted = formatFileSize(total);
+                            $("#storageUsageDetails").text(usedFormatted + " / " + totalFormatted);
+
+                            // Renk değişimi
+                            if (percent > 90) {
+                                $("#storageUsageBar").removeClass("bg-info").addClass("bg-danger");
+                            } else if (percent > 70) {
+                                $("#storageUsageBar").removeClass("bg-info").addClass("bg-warning");
+                            }
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("Kontrol paneli verileri yükleme hatası:", xhr);
+                    }
+                });
+            }
+
+            // Son yüklenen dosyaları yükle
+            function loadRecentFiles() {
+                $.ajax({
+                    url: apiBaseUrl + "/files/recent",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("Son yüklenen dosyalar:", response);
+
+                        // Yanıt formatını kontrol et
+                        var files = [];
+
+                        // 1. Direkt dizi olarak gelebilir
+                        if (Array.isArray(response)) {
+                            files = response;
+                        }
+                        // 2. files özelliği içinde gelebilir
+                        else if (response && response.files && Array.isArray(response.files)) {
+                            files = response.files;
+                        }
+                        // 3. items vb. farklı bir isimle gelebilir
+                        else if (response && response.items && Array.isArray(response.items)) {
+                            files = response.items;
+                        }
+                        // 4. data özelliği içinde gelebilir
+                        else if (response && response.data && Array.isArray(response.data)) {
+                            files = response.data;
+                        }
+
+                        var html = '';
+                        if (files && files.length > 0) {
+                            $.each(files, function(i, file) {
+                                html += '<tr>';
+                                html += '<td>' + (file.name || "") + '</td>';
+                                html += '<td>' + formatFileSize(file.size || 0) + '</td>';
+                                html += '<td>' + formatDate(file.createdAt) + '</td>';
+                                html += '</tr>';
+                            });
+                        } else {
+                            html = '<tr><td colspan="3" class="text-center">Henüz dosya yüklenmemiş</td></tr>';
+                        }
+                        $("#recentFilesTableBody").html(html);
+                    },
+                    error: function (xhr) {
+                        console.error("Son dosyalar yükleme hatası:", xhr);
+                        $("#recentFilesTableBody").html('<tr><td colspan="3" class="text-center text-danger">Son dosyalar yüklenemedi</td></tr>');
+                    }
+                });
+            }
+
+            // Son aktiviteleri yükle
+            function loadRecentActivities() {
+                $.ajax({
+                    url: apiBaseUrl + "/activities/recent",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("Son aktiviteler:", response);
+
+                        // Yanıt formatını kontrol et
+                        var activities = [];
+
+                        // 1. Direkt dizi olarak gelebilir
+                        if (Array.isArray(response)) {
+                            activities = response;
+                        }
+                        // 2. activities özelliği içinde gelebilir
+                        else if (response && response.activities && Array.isArray(response.activities)) {
+                            activities = response.activities;
+                        }
+                        // 3. items vb. farklı bir isimle gelebilir
+                        else if (response && response.items && Array.isArray(response.items)) {
+                            activities = response.items;
+                        }
+                        // 4. data özelliği içinde gelebilir
+                        else if (response && response.data && Array.isArray(response.data)) {
+                            activities = response.data;
+                        }
+
+                        var html = '';
+                        if (activities && activities.length > 0) {
+                            $.each(activities, function(i, activity) {
+                                html += '<div class="list-group-item">';
+                                html += '<div class="d-flex w-100 justify-content-between">';
+                                html += '<h6 class="mb-1">' + activity.actionType + '</h6>';
+                                html += '<small>' + formatDate(activity.createdAt) + '</small>';
+                                html += '</div>';
+                                html += '<p class="mb-1">' + activity.description + '</p>';
+                                if (activity.userEmail) {
+                                    html += '<small class="text-muted">Kullanıcı: ' + activity.userEmail + '</small>';
+                                }
+                                html += '</div>';
+                            });
+                        } else {
+                            html = '<div class="list-group-item">';
+                            html += '<div class="d-flex w-100 justify-content-between">';
+                            html += '<h6 class="mb-1">Aktivite Yok</h6>';
+                            html += '<small>-</small>';
+                            html += '</div>';
+                            html += '<p class="mb-1">Henüz kaydedilmiş aktivite yok.</p>';
+                            html += '</div>';
+                        }
+                        $("#recentActivities").html(html);
+                    },
+                    error: function (xhr) {
+                        console.error("Son aktiviteler yükleme hatası:", xhr);
+                        var html = '<div class="list-group-item">';
+                        html += '<div class="d-flex w-100 justify-content-between">';
+                        html += '<h6 class="mb-1 text-danger">Hata</h6>';
+                        html += '<small>-</small>';
+                        html += '</div>';
+                        html += '<p class="mb-1">Son aktiviteler yüklenemedi.</p>';
+                        html += '</div>';
+                        $("#recentActivities").html(html);
+                    }
+                });
+            }
+
+            // Yardımcı fonksiyonlar
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                var k = 1024,
+                    dm = 2,
+                    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                    i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                var date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+        });
+    </script>
+}

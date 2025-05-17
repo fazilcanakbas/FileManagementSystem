@@ -1,0 +1,664 @@
+﻿@{
+    ViewData["Title"] = "Dosyalar";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">Dosyalar</h1>
+    <p class="mb-4">Tüm dosyalarınızı görüntüleyebilir, yeni dosya yükleyebilir ve mevcut dosyalarınızı yönetebilirsiniz.</p>
+
+    <!-- Dosya Yükleme Kartı -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Yeni Dosya Yükle</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="ddlFolder">Klasör Seçin</label>
+                        <select class="form-control" id="ddlFolder">
+                            <option value="">Ana Dizin</option>
+                            <!-- Klasörler AJAX ile doldurulacak -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileUpload">Dosya Seçin</label>
+                        <input type="file" class="form-control-file" id="fileUpload" multiple>
+                    </div>
+                    <button id="btnUpload" class="btn btn-primary">Dosyayı Yükle</button>
+                </div>
+                <div class="col-md-6">
+                    <div class="progress mb-4" style="height: 25px; display: none;" id="uploadProgress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" id="uploadProgressBar">0%</div>
+                    </div>
+                    <div id="uploadResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dosya Listesi Kartı -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Dosya Listesi</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">İşlemler:</div>
+                    <a class="dropdown-item" href="#" id="refreshList">
+                        <i class="fas fa-sync fa-sm fa-fw mr-2 text-gray-400"></i>Listeyi Yenile
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row" id="filesContainer">
+                <!-- Dosya listesi AJAX ile doldurulacak -->
+                <div class="col-12 text-center">
+                    <i class="fas fa-spinner fa-spin"></i> Yükleniyor...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dosya Silme Modal -->
+    <div class="modal fade" id="deleteFileModal" tabindex="-1" role="dialog" aria-labelledby="deleteFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteFileModalLabel">Dosya Silme Onayı</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Bu dosyayı silmek istediğinize emin misiniz?</p>
+                    <p id="fileToDeleteName" class="font-weight-bold"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteFile">Sil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resim Önizleme Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imagePreviewModalLabel">Resim Önizleme</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="" id="imagePreview" class="img-fluid" alt="Resim Önizleme">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                    <a href="#" id="downloadImageBtn" class="btn btn-primary" download target="_blank">İndir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dosya kartı için CSS stilleri -->
+<style>
+    .file-card {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+        .file-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.3);
+        }
+
+    .file-preview {
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+        .file-preview img {
+            max-height: 140px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .file-preview .file-icon {
+            font-size: 60px;
+            color: #4e73df;
+        }
+
+    .file-body {
+        padding: 15px;
+    }
+
+    .file-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-info {
+        font-size: 12px;
+        color: #858796;
+    }
+
+    .file-actions {
+        padding: 10px 15px;
+        background-color: #f8f9fc;
+        border-top: 1px solid #e3e6f0;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // API URL
+            var apiBaseUrl = "http://localhost:5229/api";
+
+            // Token kontrolü
+            var token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/Home/Login";
+                return;
+            }
+
+            // Sayfa yüklendiğinde dosya listesini ve klasörleri getir
+            loadFolders();
+            loadFiles();
+
+            // Listeyi yenile butonu
+            $("#refreshList").click(function () {
+                loadFiles();
+            });
+
+            // Dosya yükleme butonu
+            $("#btnUpload").click(function () {
+                uploadFiles();
+            });
+
+            // Klasörleri yükle
+            function loadFolders() {
+                $.ajax({
+                    url: apiBaseUrl + "/folders",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("API'den alınan klasörler:", response);
+
+                        // Yanıt formatını kontrol et
+                        var folders = [];
+
+                        // 1. Direkt dizi olarak gelebilir
+                        if (Array.isArray(response)) {
+                            folders = response;
+                        }
+                        // 2. Folders özelliği içinde gelebilir (pagination yapısı)
+                        else if (response && response.folders && Array.isArray(response.folders)) {
+                            folders = response.folders;
+                        }
+                        // 3. Items vb. farklı bir isimle gelebilir
+                        else if (response && response.items && Array.isArray(response.items)) {
+                            folders = response.items;
+                        }
+                        // 4. Data özelliği içinde gelebilir
+                        else if (response && response.data && Array.isArray(response.data)) {
+                            folders = response.data;
+                        }
+
+                        console.log("İşlenecek klasör sayısı:", folders.length);
+
+                        var options = '<option value="">Ana Dizin</option>';
+                        if (folders && folders.length > 0) {
+                            $.each(folders, function (i, folder) {
+                                options += '<option value="' + folder.id + '">' + folder.name + '</option>';
+                            });
+                        }
+                        $("#ddlFolder").html(options);
+                    },
+                    error: function (xhr) {
+                        showAlert("danger", "Klasörler yüklenirken bir hata oluştu.");
+                        console.error("Klasör listesi hata:", xhr);
+                        console.error("Hata detayları:", xhr.responseText);
+                    }
+                });
+            }
+
+            // Dosya listesini yükle
+            // Dosya listesini yükle fonksiyonunu güncelleyelim
+            function loadFiles() {
+                console.log("loadFiles fonksiyonu çağrıldı");
+                $("#filesContainer").html('<div class="col-12 text-center"><i class="fas fa-spinner fa-spin"></i> Yükleniyor...</div>');
+
+                $.ajax({
+                    url: apiBaseUrl + "/files",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("API'den alınan dosyalar:", response);
+
+                        // Yanıt içindeki 'files' özelliğini kullan
+                        var files = [];
+
+                        // 1. Direkt dizi olarak gelebilir
+                        if (Array.isArray(response)) {
+                            files = response;
+                        }
+                        // 2. files özelliği içinde gelebilir (pagination yapısı)
+                        else if (response && response.files && Array.isArray(response.files)) {
+                            files = response.files;
+                        }
+                        // 3. items vb. farklı bir isimle gelebilir
+                        else if (response && response.items && Array.isArray(response.items)) {
+                            files = response.items;
+                        }
+                        // 4. data özelliği içinde gelebilir
+                        else if (response && response.data && Array.isArray(response.data)) {
+                            files = response.data;
+                        }
+
+                        var html = '';
+                        if (files && files.length > 0) {
+                            console.log("Dosya sayısı: " + files.length);
+
+                            $.each(files, function (i, file) {
+                                var isImage = isImageFile(file.contentType);
+                                var fileIcon = getFileIcon(file.contentType, file.name);
+                                var filePreview = '';
+
+                                if (isImage) {
+                                    // Resim dosyası için önizleme - Base64 kullan veya placeholder göster
+                                    filePreview = '<div class="file-preview" onclick="previewFile(' + file.id + ', \'' + file.name + '\', \'' + file.contentType + '\')">' +
+                                        '<img src="/img/image-placeholder.png" alt="' + file.name + '" class="img-placeholder">' +
+                                        '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="img-loading" style="display: none;">' +
+                                        '</div>';
+                                } else {
+                                    // Diğer dosya tipleri için ikon
+                                    filePreview = '<div class="file-preview">' +
+                                        '<i class="' + fileIcon + ' file-icon"></i>' +
+                                        '</div>';
+                                }
+
+                                html += '<div class="col-md-4 col-lg-3">' +
+                                    '<div class="file-card">' +
+                                    filePreview +
+                                    '<div class="file-body">' +
+                                    '<div class="file-name" title="' + (file.name || "") + '">' + (file.name || "") + '</div>' +
+                                    '<div class="file-info">' +
+                                    '<div>Boyut: ' + formatFileSize(file.size || 0) + '</div>' +
+                                    '<div>Tür: ' + (file.contentType || "") + '</div>' +
+                                    '<div>Klasör: ' + (file.folderName || "Ana Dizin") + '</div>' +
+                                    '<div>Tarih: ' + formatDate(file.createdAt) + '</div>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<div class="file-actions">' +
+                                    '<button class="btn btn-sm btn-primary mr-1" onclick="downloadFile(' + file.id + ', \'' + (file.name || "file") + '\')"><i class="fas fa-download"></i> İndir</button>' +
+                                    '<button class="btn btn-sm btn-danger" onclick="deleteFile(' + file.id + ', \'' + (file.name || "file") + '\')"><i class="fas fa-trash"></i> Sil</button>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</div>';
+                            });
+                        } else {
+                            console.log("Dosya listesi boş");
+                            html = '<div class="col-12 text-center">Henüz dosya yüklenmemiş</div>';
+                        }
+
+                        console.log("HTML oluşturuldu, dosya listesine ekleniyor");
+                        $("#filesContainer").html(html);
+                        console.log("Dosya listesi güncellendi");
+
+                        // Resimleri ayrı bir işlemde yükle
+                        if (files && files.length > 0) {
+                            setTimeout(loadImagePreviews, 100);  // Kısa bir gecikme ile resimleri yükle
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Dosya listesi yükleme hatası:", status, error);
+                        console.error("Hata detayları:", xhr.responseText);
+                        $("#filesContainer").html('<div class="col-12 text-center text-danger">Dosya listesi yüklenemedi</div>');
+                    }
+                });
+            }
+
+            // Resim önizlemelerini ayrı bir işlemde yükle
+            function loadImagePreviews() {
+                // Tüm resim önizleme kutularını bul
+                $(".file-preview").each(function () {
+                    var previewBox = $(this);
+                    if (previewBox.find(".img-placeholder").length > 0) {
+                        var fileId = previewBox.attr("onclick").match(/previewFile\((\d+)/)[1];
+
+                        // Resim önizlemesini yüklemeyi dene
+                        var img = new Image();
+                        img.onload = function () {
+                            // Resim başarıyla yüklendiyse placeholder'ı gizle ve gerçek resmi göster
+                            previewBox.find(".img-placeholder").hide();
+                            previewBox.append($(img).addClass("preview-image"));
+                        };
+
+                        img.onerror = function () {
+                            // Resim yüklenemezse placeholder göstermeye devam et
+                            console.error("Resim yüklenemedi: " + fileId);
+                        };
+
+                        // Resmi yükle
+                        img.src = apiBaseUrl + '/files/download/' + fileId + '?t=' + new Date().getTime();
+                    }
+                });
+            }
+
+            // Dosya önizleme fonksiyonu - resim veya diğer dosyaları gösterir
+            window.previewFile = function (fileId, fileName, contentType) {
+                if (isImageFile(contentType)) {
+                    // Resim önizleme için modal hazırla
+                    $("#imagePreviewModalLabel").text(fileName);
+                    $("#imagePreview").attr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"); // Boş resim
+                    $("#imagePreviewModal").modal("show");
+
+                    // Resmi yükle
+                    var img = new Image();
+                    img.onload = function () {
+                        $("#imagePreview").attr("src", this.src);
+                    };
+
+                    img.src = apiBaseUrl + '/files/download/' + fileId + '?t=' + new Date().getTime();
+                    $("#downloadImageBtn").attr("href", apiBaseUrl + '/files/download/' + fileId);
+                } else {
+                    // Resim olmayan dosyalar için direk indirme başlat
+                    downloadFile(fileId, fileName);
+                }
+            }
+
+            // Dosya tipine göre ikon belirleme
+            window.getFileIcon = function (contentType, fileName) {
+                if (isImageFile(contentType)) {
+                    return "far fa-file-image";
+                }
+
+                // Dosya uzantısına göre ikon belirleme
+                var extension = fileName.split('.').pop().toLowerCase();
+
+                switch (extension) {
+                    case 'pdf':
+                        return "far fa-file-pdf";
+                    case 'doc':
+                    case 'docx':
+                        return "far fa-file-word";
+                    case 'xls':
+                    case 'xlsx':
+                        return "far fa-file-excel";
+                    case 'ppt':
+                    case 'pptx':
+                        return "far fa-file-powerpoint";
+                    case 'zip':
+                    case 'rar':
+                    case '7z':
+                        return "far fa-file-archive";
+                    case 'txt':
+                        return "far fa-file-alt";
+                    case 'html':
+                    case 'css':
+                    case 'js':
+                        return "far fa-file-code";
+                    case 'mp3':
+                    case 'wav':
+                    case 'ogg':
+                        return "far fa-file-audio";
+                    case 'mp4':
+                    case 'avi':
+                    case 'mov':
+                    case 'wmv':
+                        return "far fa-file-video";
+                    default:
+                        return "far fa-file";
+                }
+            }
+
+            // Resim dosyası mı kontrolü
+            window.isImageFile = function (contentType) {
+                if (!contentType) return false;
+                return contentType.startsWith("image/");
+            }
+
+            // Büyük resim önizleme
+            window.showImagePreview = function (imageUrl, fileName) {
+                $("#imagePreviewModalLabel").text(fileName);
+                $("#imagePreview").attr("src", imageUrl);
+                $("#downloadImageBtn").attr("href", imageUrl);
+                $("#imagePreviewModal").modal("show");
+            }
+
+            // Dosya indirme fonksiyonu
+            window.downloadFile = function (fileId, fileName) {
+                console.log("Dosya indiriliyor. ID:", fileId, "Ad:", fileName);
+
+                // İndirme başladı bildirimi
+                showAlert("info", "Dosya indiriliyor...");
+
+                // XMLHttpRequest kullanarak dosyayı blob olarak indirin
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', apiBaseUrl + '/files/download/' + fileId, true);
+                xhr.responseType = 'blob';
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+
+                xhr.onload = function () {
+                    if (this.status === 200) {
+                        // Blob oluştur
+                        var blob = new Blob([this.response]);
+
+                        // İndirme bağlantısı oluştur
+                        var downloadLink = document.createElement('a');
+                        downloadLink.href = window.URL.createObjectURL(blob);
+                        downloadLink.download = fileName || "download";
+
+                        // Bağlantıyı sayfaya ekle (görünmez)
+                        document.body.appendChild(downloadLink);
+
+                        // İndirme işlemini başlat
+                        downloadLink.click();
+
+                        // Temizlik
+                        window.URL.revokeObjectURL(downloadLink.href);
+                        document.body.removeChild(downloadLink);
+
+                        showAlert("success", "Dosya başarıyla indirildi");
+                    } else {
+                        showAlert("danger", "Dosya indirilemedi: " + this.status);
+                        console.error("İndirme hatası:", this.statusText);
+                    }
+                };
+
+                xhr.onerror = function () {
+                    showAlert("danger", "Dosya indirme sırasında bir hata oluştu");
+                    console.error("İndirme hatası:", this.statusText);
+                };
+
+                xhr.send();
+            }
+
+            // Dosya silme fonksiyonu
+            window.deleteFile = function (fileId, fileName) {
+                // Modal'ı hazırla
+                $("#fileToDeleteName").text(fileName || "Seçilen dosya");
+
+                // Modal'ı göster
+                $("#deleteFileModal").modal('show');
+
+                // Silme butonuna tıklama işlemi
+                $("#confirmDeleteFile").off('click').on('click', function () {
+                    $.ajax({
+                        url: apiBaseUrl + "/files/" + fileId,
+                        type: "DELETE",
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        },
+                        success: function () {
+                            // Modal'ı kapat
+                            $("#deleteFileModal").modal('hide');
+
+                            showAlert("success", "Dosya başarıyla silindi");
+                            loadFiles();
+                        },
+                        error: function (xhr) {
+                            // Modal'ı kapat
+                            $("#deleteFileModal").modal('hide');
+
+                            showAlert("danger", "Dosya silinirken bir hata oluştu");
+                            console.error("Dosya silme hatası:", xhr);
+                        }
+                    });
+                });
+            }
+
+            // Dosya yükleme işlemi
+            function uploadFiles() {
+                var files = $("#fileUpload")[0].files;
+                if (files.length === 0) {
+                    showAlert("warning", "Lütfen yüklemek için bir dosya seçin");
+                    return;
+                }
+
+                var folderId = $("#ddlFolder").val();
+
+                // Form verisi oluştur
+                var formData = new FormData();
+
+                // API "file" parametresini bekliyor
+                if (files.length === 1) {
+                    // Tek dosya yükleme
+                    formData.append("file", files[0]);
+                } else {
+                    // Çoklu dosya yükleme - API'niz çoklu dosya yüklemeyi destekliyorsa
+                    for (var i = 0; i < files.length; i++) {
+                        formData.append("file", files[i]);
+                    }
+                }
+
+                // Klasör ID'si varsa ekle
+                if (folderId && folderId !== "") {
+                    formData.append("folderId", folderId);
+                }
+
+                // Butonları devre dışı bırak ve progress bar göster
+                $("#btnUpload").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Yükleniyor...');
+                $("#uploadProgress").show();
+
+                $.ajax({
+                    url: apiBaseUrl + "/files/upload",
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    xhr: function () {
+                        var xhr = $.ajaxSettings.xhr();
+                        xhr.upload.onprogress = function (e) {
+                            if (e.lengthComputable) {
+                                var percent = Math.round((e.loaded / e.total) * 100);
+                                $("#uploadProgressBar").css("width", percent + "%").text(percent + "%");
+                            }
+                        };
+                        return xhr;
+                    },
+                    success: function (response) {
+                        $("#uploadProgressBar").css("width", "100%").text("100%");
+                        showAlert("success", "Dosya(lar) başarıyla yüklendi");
+
+                        // Form sıfırla
+                        $("#fileUpload").val("");
+
+                        // Dosya listesini yenile
+                        loadFiles();
+
+                        // Butonları aktifleştir
+                        setTimeout(function () {
+                            $("#btnUpload").prop("disabled", false).html('Dosyayı Yükle');
+                            $("#uploadProgress").hide();
+                            $("#uploadProgressBar").css("width", "0%").text("0%");
+                        }, 1000);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Upload error:", status, error);
+                        console.error("Response:", xhr.responseText);
+
+                        var errorMessage = "Dosya yüklenirken bir hata oluştu";
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.error) {
+                                errorMessage = xhr.responseJSON.error;
+                            } else if (xhr.responseText) {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response && response.errors && response.errors.file) {
+                                    errorMessage = "Dosya hatası: " + response.errors.file[0];
+                                } else if (response && response.title) {
+                                    errorMessage = response.title;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("JSON parse error", e);
+                        }
+
+                        showAlert("danger", errorMessage);
+
+                        // Butonları aktifleştir
+                        $("#btnUpload").prop("disabled", false).html('Dosyayı Yükle');
+                        $("#uploadProgress").hide();
+                        $("#uploadProgressBar").css("width", "0%").text("0%");
+                    }
+                });
+            }
+
+            // Yardımcı fonksiyonlar
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                var k = 1024,
+                    dm = 2,
+                    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                    i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                var date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+
+            function showAlert(type, message) {
+                var html = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                    message +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button>' +
+                    '</div>';
+                $("#uploadResult").html(html);
+            }
+        });
+    </script>
+}

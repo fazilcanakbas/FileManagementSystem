@@ -41,8 +41,13 @@ namespace uyg.UI.Controllers
         [Route("Login")]
         public IActionResult Login()
         {
-            var ApiBaseURL = _configuration["ApiBaseURL"];
-            ViewBag.ApiBaseURL = ApiBaseURL;
+            ViewBag.ApiBaseURL = _configuration["ApiSettings:BaseUrl"];
+
+            return View();
+        }
+        [HttpGet]
+        public IActionResult Register()
+        {
             return View();
         }
 

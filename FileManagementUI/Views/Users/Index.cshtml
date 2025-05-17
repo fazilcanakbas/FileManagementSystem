@@ -1,0 +1,540 @@
+﻿@{
+    ViewData["Title"] = "Kullanıcılar";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">Kullanıcılar</h1>
+    <p class="mb-4">Sistemdeki tüm kullanıcıları görüntüleyebilir, düzenleyebilir ve yönetebilirsiniz.</p>
+
+    <!-- Yeni Kullanıcı Oluşturma Kartı -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Yeni Kullanıcı Ekle</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="txtName">Ad Soyad</label>
+                        <input type="text" class="form-control" id="txtName" placeholder="Ad Soyad">
+                    </div>
+                    <div class="form-group">
+                        <label for="txtEmail">E-posta</label>
+                        <input type="email" class="form-control" id="txtEmail" placeholder="kullanici@ornek.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="txtPassword">Şifre</label>
+                        <input type="password" class="form-control" id="txtPassword">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="txtPhone">Telefon</label>
+                        <input type="text" class="form-control" id="txtPhone" placeholder="05XX XXX XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="ddlRole">Rol</label>
+                        <select class="form-control" id="ddlRole">
+                            <option value="user">Kullanıcı</option>
+                            <option value="admin">Yönetici</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="isActive" checked>
+                            <label class="custom-control-label" for="isActive">Aktif Kullanıcı</label>
+                        </div>
+                    </div>
+                    <button id="btnCreateUser" class="btn btn-primary">Kullanıcı Oluştur</button>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div id="createUserResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kullanıcı Listesi Kartı -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Kullanıcı Listesi</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">İşlemler:</div>
+                    <a class="dropdown-item" href="#" id="refreshUserList">
+                        <i class="fas fa-sync fa-sm fa-fw mr-2 text-gray-400"></i>Listeyi Yenile
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="usersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ad Soyad</th>
+                            <th>E-posta</th>
+                            <th>Rol</th>
+                            <th>Durum</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Kullanıcı listesi AJAX ile doldurulacak -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Düzenleme Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Kullanıcı Düzenle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editName">Ad Soyad</label>
+                            <input type="text" class="form-control" id="editName">
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmail">E-posta</label>
+                            <input type="email" class="form-control" id="editEmail">
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhone">Telefon</label>
+                            <input type="text" class="form-control" id="editPhone">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="editRole">Rol</label>
+                            <select class="form-control" id="editRole">
+                                <option value="user">Kullanıcı</option>
+                                <option value="admin">Yönetici</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="editIsActive">
+                                <label class="custom-control-label" for="editIsActive">Aktif Kullanıcı</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPassword">Yeni Şifre (boş bırakılabilir)</label>
+                            <input type="password" class="form-control" id="editPassword" placeholder="Değiştirmek için yeni şifre girin">
+                        </div>
+                    </div>
+                </div>
+                <div id="editUserResult"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="btnSaveUser">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Silme Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserModalLabel">Kullanıcı Silme Onayı</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bu kullanıcıyı silmek istediğinize emin misiniz?</p>
+                <p id="userToDeleteName" class="font-weight-bold"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteUser">Sil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // API URL
+            var apiBaseUrl = "http://localhost:5229/api";
+
+            // Token kontrolü
+            var token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "/Home/Login";
+                return;
+            }
+
+            // Sayfa yüklendiğinde kullanıcı listesini getir
+            loadUsers();
+
+            // Listeyi yenile butonu
+            $("#refreshUserList").click(function () {
+                loadUsers();
+            });
+
+            // Kullanıcı oluşturma butonu
+            $("#btnCreateUser").click(function () {
+                createUser();
+            });
+
+            // Düzenleme modalını kaydet butonu
+            $("#btnSaveUser").click(function () {
+                updateUser();
+            });
+
+            // Kullanıcıları yükle
+            function loadUsers() {
+                // Kullanıcı listesi
+                $("#usersTableBody").html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Yükleniyor...</td></tr>');
+
+                $.ajax({
+                    url: apiBaseUrl + "/users",
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        console.log("API'den alınan kullanıcılar:", response);
+
+                        // Yanıt formatını kontrol et
+                        var users = [];
+
+                        // 1. Direkt dizi olarak gelebilir
+                        if (Array.isArray(response)) {
+                            users = response;
+                        }
+                        // 2. users özelliği içinde gelebilir (pagination yapısı)
+                        else if (response && response.users && Array.isArray(response.users)) {
+                            users = response.users;
+                        }
+                        // 3. items vb. farklı bir isimle gelebilir
+                        else if (response && response.items && Array.isArray(response.items)) {
+                            users = response.items;
+                        }
+                        // 4. data özelliği içinde gelebilir
+                        else if (response && response.data && Array.isArray(response.data)) {
+                            users = response.data;
+                        }
+
+                        console.log("İşlenecek kullanıcı sayısı:", users.length);
+
+                        // Kullanıcı tablosu
+                        var html = '';
+                        if (users && users.length > 0) {
+                            $.each(users, function (i, user) {
+                                html += '<tr>';
+                                html += '<td>' + user.id + '</td>';
+                                html += '<td>' + (user.name || "") + '</td>';
+                                html += '<td>' + (user.email || "") + '</td>';
+                                html += '<td>' + formatRole(user.role) + '</td>';
+                                html += '<td>' + formatStatus(user.isActive) + '</td>';
+                                html += '<td>' + formatDate(user.createdAt) + '</td>';
+                                html += '<td>';
+                                html += '<button class="btn btn-sm btn-primary mr-1" onclick="editUser(' + user.id + ')"><i class="fas fa-edit"></i> Düzenle</button>';
+                                html += '<button class="btn btn-sm btn-danger" onclick="deleteUser(' + user.id + ', \'' + (user.name || user.email) + '\')"><i class="fas fa-trash"></i> Sil</button>';
+                                html += '</td>';
+                                html += '</tr>';
+                            });
+                        } else {
+                            html = '<tr><td colspan="7" class="text-center">Henüz kullanıcı eklenmemiş</td></tr>';
+                        }
+                        $("#usersTableBody").html(html);
+                    },
+                    error: function (xhr) {
+                        console.error("Kullanıcı listesi yükleme hatası:", xhr);
+                        console.error("Hata detayları:", xhr.responseText);
+                        $("#usersTableBody").html('<tr><td colspan="7" class="text-center text-danger">Kullanıcı listesi yüklenemedi</td></tr>');
+                    }
+                });
+            }
+
+            // Rol formatla
+            function formatRole(role) {
+                switch (role) {
+                    case 'admin':
+                        return '<span class="badge badge-primary">Yönetici</span>';
+                    case 'user':
+                        return '<span class="badge badge-info">Kullanıcı</span>';
+                    default:
+                        return '<span class="badge badge-secondary">' + role + '</span>';
+                }
+            }
+
+            // Durum formatla
+            function formatStatus(isActive) {
+                if (isActive) {
+                    return '<span class="badge badge-success">Aktif</span>';
+                } else {
+                    return '<span class="badge badge-danger">Pasif</span>';
+                }
+            }
+
+            // Kullanıcı oluşturma
+            function createUser() {
+                var name = $("#txtName").val();
+                var email = $("#txtEmail").val();
+                var password = $("#txtPassword").val();
+                var phone = $("#txtPhone").val();
+                var role = $("#ddlRole").val();
+                var isActive = $("#isActive").is(":checked");
+
+                // Validasyon
+                if (!name || !email || !password) {
+                    showAlert("createUserResult", "warning", "Ad Soyad, E-posta ve Şifre alanları zorunludur");
+                    return;
+                }
+
+                var userData = {
+                    name: name,
+                    email: email,
+                    password: password,
+                    phone: phone,
+                    role: role,
+                    isActive: isActive
+                };
+
+                $("#btnCreateUser").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Oluşturuluyor...');
+
+                $.ajax({
+                    url: apiBaseUrl + "/users",
+                    type: "POST",
+                    data: JSON.stringify(userData),
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        showAlert("createUserResult", "success", "Kullanıcı başarıyla oluşturuldu");
+
+                        // Formu temizle
+                        $("#txtName").val("");
+                        $("#txtEmail").val("");
+                        $("#txtPassword").val("");
+                        $("#txtPhone").val("");
+                        $("#ddlRole").val("user");
+                        $("#isActive").prop("checked", true);
+
+                        // Kullanıcı listesini yenile
+                        loadUsers();
+
+                        $("#btnCreateUser").prop("disabled", false).html('Kullanıcı Oluştur');
+                    },
+                    error: function (xhr) {
+                        console.error("Kullanıcı oluşturma hatası:", xhr);
+
+                        var errorMessage = "Kullanıcı oluşturulurken bir hata oluştu";
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response && response.message) {
+                                    errorMessage = response.message;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("JSON parse error", e);
+                        }
+
+                        showAlert("createUserResult", "danger", errorMessage);
+                        $("#btnCreateUser").prop("disabled", false).html('Kullanıcı Oluştur');
+                    }
+                });
+            }
+
+            // Kullanıcı düzenleme formunu açma
+            window.editUser = function (userId) {
+                $.ajax({
+                    url: apiBaseUrl + "/users/" + userId,
+                    type: "GET",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (data) {
+                        // Yanıt formatını kontrol et (tek bir kullanıcı bilgisi)
+                        var user = data;
+                        if (data && data.data) {
+                            user = data.data;
+                        }
+
+                        $("#editUserId").val(user.id);
+                        $("#editName").val(user.name || "");
+                        $("#editEmail").val(user.email || "");
+                        $("#editPhone").val(user.phone || "");
+                        $("#editRole").val(user.role || "user");
+                        $("#editIsActive").prop("checked", user.isActive);
+                        $("#editPassword").val(""); // Şifreyi boş bırak
+
+                        $("#editUserModal").modal('show');
+                    },
+                    error: function (xhr) {
+                        console.error("Kullanıcı bilgileri alınamadı:", xhr);
+                        showAlert("createUserResult", "danger", "Kullanıcı bilgileri alınamadı");
+                    }
+                });
+            }
+
+            // Kullanıcı güncelleme
+            function updateUser() {
+                var userId = $("#editUserId").val();
+                var name = $("#editName").val();
+                var email = $("#editEmail").val();
+                var phone = $("#editPhone").val();
+                var role = $("#editRole").val();
+                var isActive = $("#editIsActive").is(":checked");
+                var password = $("#editPassword").val();
+
+                // Validasyon
+                if (!name || !email) {
+                    showAlert("editUserResult", "warning", "Ad Soyad ve E-posta alanları zorunludur");
+                    return;
+                }
+
+                var userData = {
+                    id: userId,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    isActive: isActive
+                };
+
+                // Şifre sadece dolu ise gönder
+                if (password) {
+                    userData.password = password;
+                }
+
+                $("#btnSaveUser").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Kaydediliyor...');
+
+                $.ajax({
+                    url: apiBaseUrl + "/users/" + userId,
+                    type: "PUT",
+                    data: JSON.stringify(userData),
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (response) {
+                        showAlert("editUserResult", "success", "Kullanıcı başarıyla güncellendi");
+
+                        setTimeout(function () {
+                            $("#editUserModal").modal('hide');
+                            loadUsers(); // Kullanıcı listesini yenile
+                        }, 1500);
+
+                        $("#btnSaveUser").prop("disabled", false).html('Kaydet');
+                    },
+                    error: function (xhr) {
+                        console.error("Kullanıcı güncelleme hatası:", xhr);
+
+                        var errorMessage = "Kullanıcı güncellenirken bir hata oluştu";
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response && response.message) {
+                                    errorMessage = response.message;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("JSON parse error", e);
+                        }
+
+                        showAlert("editUserResult", "danger", errorMessage);
+                        $("#btnSaveUser").prop("disabled", false).html('Kaydet');
+                    }
+                });
+            }
+
+            // Kullanıcı silme
+            window.deleteUser = function (userId, userName) {
+                // Modal'ı hazırla
+                $("#userToDeleteName").text(userName || "Seçilen kullanıcı");
+
+                // Modal'ı göster
+                $("#deleteUserModal").modal('show');
+
+                // Silme butonuna tıklama işlemi
+                $("#confirmDeleteUser").off('click').on('click', function () {
+                    $.ajax({
+                        url: apiBaseUrl + "/users/" + userId,
+                        type: "DELETE",
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        },
+                        success: function () {
+                            // Modal'ı kapat
+                            $("#deleteUserModal").modal('hide');
+
+                            showAlert("createUserResult", "success", "Kullanıcı başarıyla silindi");
+                            loadUsers(); // Kullanıcı listesini yenile
+                        },
+                        error: function (xhr) {
+                            // Modal'ı kapat
+                            $("#deleteUserModal").modal('hide');
+
+                            var errorMessage = "Kullanıcı silinirken bir hata oluştu";
+                            try {
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.responseText) {
+                                    var response = JSON.parse(xhr.responseText);
+                                    if (response && response.message) {
+                                        errorMessage = response.message;
+                                    }
+                                }
+                            } catch (e) {
+                                console.error("JSON parse error", e);
+                            }
+
+                            showAlert("createUserResult", "danger", errorMessage);
+                        }
+                    });
+                });
+            }
+        });
+
+        // Yardımcı fonksiyonlar
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            var date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function showAlert(targetId, type, message) {
+            var html = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                message +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                '<span aria-hidden="true">&times;</span>' +
+                '</button>' +
+                '</div>';
+            $("#" + targetId).html(html);
+        }
+    </script>
+}
